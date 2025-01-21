@@ -1,0 +1,12 @@
+[
+  {
+    "productId": 12,
+    "productName": " Mustang",
+    "category": " Cars",
+    "price": 10000.0,
+    "stock": 111,
+    "sales": [
+      10
+    ]
+  }
+]
