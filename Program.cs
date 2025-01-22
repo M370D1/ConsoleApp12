@@ -1,5 +1,6 @@
 ﻿using System;
 using Task1;
+using Task2;
 
 class Program
 {

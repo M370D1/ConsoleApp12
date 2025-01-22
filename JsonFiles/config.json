@@ -1,0 +1,27 @@
+{
+  "appSettings": {
+    "appName": "MyApplication",
+    "version": "1.0.0"
+  },
+  "featureFlags": {
+    "darkMode": false,
+    "betaFeatures": false
+  },
+  "apiEndpoints": [
+    {
+      "name": "UserService",
+      "url": "https://api.example.com/users",
+      "isSecure": true
+    },
+    {
+      "name": "ProductService",
+      "url": "http://api.example.com/products",
+      "isSecure": false
+    },
+    {
+      "name": "OrderService",
+      "url": "https://api.example.com/orders",
+      "isSecure": true
+    }
+  ]
+}
