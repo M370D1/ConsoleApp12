@@ -1,157 +1,160 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 
-class ProductInventoryManager
+namespace Task1
 {
-    private const string InventoryFilePath = "inventory.json";
-
-    public static void RunTask1()
+    public class ProductInventoryManager
     {
-        while (true)
+        private static string FilePath = "D:\\Automation_QA\\ConsoleApp12\\JsonFiles\\inventory.json";
+        public static void AddProduct(int productId, string productName, string category, decimal price, int stock, int[] sales)
         {
+            if (!File.Exists(FilePath))
+            {
+                Console.WriteLine("File not found.");
+                return;
+            }
+
+            string jsonData = File.ReadAllText(FilePath);
+
             try
             {
-                if (!File.Exists(InventoryFilePath))
+                var products = JsonConvert.DeserializeObject<JArray>(jsonData) ?? new JArray();
+
+                if (products.Any(p => (int)p["productId"] == productId))
                 {
-                    Console.WriteLine("Inventory file not found. Creating a new one...");
-                    File.WriteAllText(InventoryFilePath, "[]");
+                    Console.WriteLine("Product with this productId already exists.");
+                    return;
                 }
 
-                Console.WriteLine("Choose an action:");
-                Console.WriteLine("1. Add a new product");
-                Console.WriteLine("2. Calculate total stock value by category");
-                Console.WriteLine("3. Display the best-selling product");
-                Console.WriteLine("4. Update stock quantity by productId");
-                Console.WriteLine("5. Exit");
+                var newProduct = new JObject
+        {
+            { "productId", productId },
+            { "productName", productName },
+            { "category", category },
+            { "price", price },
+            { "stock", stock },
+            { "sales", new JArray(sales) }
+        };
 
-                int choice = int.Parse(Console.ReadLine());
-                switch (choice)
+                products.Add(newProduct);
+
+                File.WriteAllText(FilePath, JsonConvert.SerializeObject(products, Formatting.Indented));
+                Console.WriteLine("Product added successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error parsing JSON: " + ex.Message);
+            }
+        }
+
+
+        public static void CalculateTotalStockValuePerCategory()
+        {
+            if (!File.Exists(FilePath))
+            {
+                Console.WriteLine("File not found.");
+                return;
+            }
+
+            string jsonData = File.ReadAllText(FilePath);
+
+            try
+            {
+                var products = JsonConvert.DeserializeObject<JArray>(jsonData) ?? new JArray();
+
+                var stockValues = products.GroupBy(p => (string)p["category"])
+                                           .Select(g => new
+                                           {
+                                               Category = g.Key,
+                                               TotalStockValue = g.Sum(p => (decimal)p["price"] * (int)p["stock"])
+                                           });
+
+                foreach (var category in stockValues)
                 {
-                    case 1:
-                        AddProduct();
-                        break;
-                    case 2:
-                        CalculateTotalStockValue();
-                        break;
-                    case 3:
-                        PrintBestSellingProduct();
-                        break;
-                    case 4:
-                        UpdateStockQuantity();
-                        break;
-                    case 5:
-                        Console.WriteLine("Exiting the application.");
-                        return;
-                    default:
-                        Console.WriteLine("Invalid choice.");
-                        break;
+                    Console.WriteLine($"Category: {category.Category}, Total Stock Value: {category.TotalStockValue:C}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"An error occurred: {ex.Message}");
+                Console.WriteLine("Error parsing JSON: " + ex.Message);
             }
         }
-    }
 
-    private static JArray LoadInventory()
-    {
-        string json = File.ReadAllText(InventoryFilePath);
-        return JArray.Parse(json);
-    }
 
-    private static void SaveInventory(JArray inventory)
-    {
-        File.WriteAllText(InventoryFilePath, inventory.ToString(Formatting.Indented));
-    }
-
-    private static void AddProduct()
-    {
-        Console.WriteLine("Enter product details (productId, productName, category, price, stock, sales as comma-separated values):");
-        string[] input = Console.ReadLine().Split(',');
-
-        int productId = int.Parse(input[0]);
-        string productName = input[1];
-        string category = input[2];
-        decimal price = decimal.Parse(input[3]);
-        int stock = int.Parse(input[4]);
-        int[] sales = input[5].Split('-').Select(int.Parse).ToArray();
-
-        JArray inventory = LoadInventory();
-
-        if (inventory.Any(p => (int)p["productId"] == productId))
+        public static void PrintBestSellingProduct()
         {
-            Console.WriteLine("Product with the given productId already exists.");
-            return;
+            if (!File.Exists(FilePath))
+            {
+                Console.WriteLine("File not found.");
+                return;
+            }
+
+            string jsonData = File.ReadAllText(FilePath);
+
+            try
+            {
+                var products = JsonConvert.DeserializeObject<JArray>(jsonData) ?? new JArray();
+
+                var bestSellingProduct = products.OrderByDescending(p => ((JArray)p["sales"]).Sum(s => (int)s))
+                                                  .FirstOrDefault();
+
+                if (bestSellingProduct != null)
+                {
+                    Console.WriteLine("Best Selling Product:");
+                    Console.WriteLine($"Product ID: {bestSellingProduct["productId"]}");
+                    Console.WriteLine($"Product Name: {bestSellingProduct["productName"]}");
+                    Console.WriteLine($"Total Sales: {((JArray)bestSellingProduct["sales"]).Sum(s => (int)s)}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error parsing JSON: " + ex.Message);
+            }
         }
 
-        JObject newProduct = new JObject
+
+        public static void UpdateStock(int productId, int newStock)
         {
-            ["productId"] = productId,
-            ["productName"] = productName,
-            ["category"] = category,
-            ["price"] = price,
-            ["stock"] = stock,
-            ["sales"] = new JArray(sales)
-        };
+            if (!File.Exists(FilePath))
+            {
+                Console.WriteLine("File not found.");
+                return;
+            }
 
-        inventory.Add(newProduct);
-        SaveInventory(inventory);
-        Console.WriteLine("Product added successfully.");
-    }
+            string jsonData = File.ReadAllText(FilePath);
 
-    private static void CalculateTotalStockValue()
-    {
-        JArray inventory = LoadInventory();
+            try
+            {
+                var products = JsonConvert.DeserializeObject<JArray>(jsonData) ?? new JArray();
+                var productToUpdate = products.FirstOrDefault(p => (int)p["productId"] == productId);
 
-        var stockValueByCategory = inventory.GroupBy(p => p["category"].ToString())
-            .Select(g => new { Category = g.Key, TotalValue = g.Sum(p => (decimal)p["price"] * (int)p["stock"]) });
+                if (productToUpdate == null)
+                {
+                    Console.WriteLine("Product not found.");
+                    return;
+                }
 
-        Console.WriteLine("Total Stock Value by Category:");
-        foreach (var category in stockValueByCategory)
-        {
-            Console.WriteLine($"{category.Category}: {category.TotalValue:C}");
-        }
-    }
-
-    private static void PrintBestSellingProduct()
-    {
-        JArray inventory = LoadInventory();
-
-        var bestSeller = inventory.Select(p => new
-        {
-            ProductName = p["productName"].ToString(),
-            TotalSales = ((JArray)p["sales"]).Sum(s => (int)s)
-        }).OrderByDescending(p => p.TotalSales).FirstOrDefault();
-
-        Console.WriteLine(bestSeller != null
-            ? $"Best-Selling Product: {bestSeller.ProductName} (Total Sales: {bestSeller.TotalSales})"
-            : "No products available to evaluate best-seller.");
-    }
-
-    private static void UpdateStockQuantity()
-    {
-        Console.WriteLine("Enter the productId of the product to update:");
-        int productId = int.Parse(Console.ReadLine());
-
-        Console.WriteLine("Enter the new stock quantity:");
-        int newStock = int.Parse(Console.ReadLine());
-
-        JArray inventory = LoadInventory();
-
-        JObject product = inventory.FirstOrDefault(p => (int)p["productId"] == productId) as JObject;
-        if (product == null)
-        {
-            Console.WriteLine("Product not found.");
-            return;
+                productToUpdate["stock"] = newStock;
+                File.WriteAllText(FilePath, JsonConvert.SerializeObject(products, Formatting.Indented));
+                Console.WriteLine("Stock updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error parsing JSON: " + ex.Message);
+            }
         }
 
-        product["stock"] = newStock;
-        SaveInventory(inventory);
-        Console.WriteLine("Stock quantity updated successfully.");
+
+        public static void RunTask1()
+        {
+            // Example Usage
+            AddProduct(101, "Laptop", "Electronics", 1200.50m, 10, new int[] { 5, 7, 8 });
+            CalculateTotalStockValuePerCategory();
+            PrintBestSellingProduct();
+            UpdateStock(101, 15);
+        }
     }
 }

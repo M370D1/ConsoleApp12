@@ -1,0 +1,11 @@
+{
+  "appSettings": {
+    "appName": "MyApplication",
+    "version": "1.0.0"
+  },
+  "featureFlags": {
+    "darkMode": true,
+    "betaFeatures": false
+  },
+  "apiEndpoints": []
+}

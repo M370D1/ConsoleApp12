@@ -1,4 +1,5 @@
 ﻿using System;
+using Task1;
 
 class Program
 {
@@ -8,7 +9,7 @@ class Program
         {
             Console.WriteLine("Choose a task to execute:");
             Console.WriteLine("1. Product Inventory Management");
-            Console.WriteLine("2. [Future Task Placeholder]");
+            Console.WriteLine("2. Dynamic JSON Configuration Manager");
             Console.WriteLine("3. Exit");
 
             int choice;
@@ -25,7 +26,7 @@ class Program
                     break;
 
                 case 2:
-                    Console.WriteLine("[Future Task Placeholder: Add your task logic here]");
+                    JsonConfigurationManager.RunTask2(); // Calls Task 2
                     break;
 
                 case 3:
