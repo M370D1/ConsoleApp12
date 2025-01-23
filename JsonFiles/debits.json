@@ -1,0 +1,7 @@
+[
+  {
+    "transactionId": 2,
+    "type": "debit",
+    "amount": 100
+  }
+]

@@ -1,0 +1,17 @@
+﻿[
+    {
+        "transactionId": 1,
+        "type": "credit",
+        "amount": 200
+    },
+    {
+        "transactionId": 2,
+        "type": "debit",
+        "amount": 100
+    },
+    {
+        "transactionId": 3,
+        "type": "credit",
+        "amount": 300
+    }
+]
